@@ -2,11 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import LessonActions from "@/components/LessonActions";
 import CommentSection from "@/components/CommentSection";
-import {
-  getLessonById,
-  getLessonSteps,
-  getLessonComments,
-} from "@/lib/mock-data";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+
+const LEVEL_LABELS = {
+  BEGINNER: "Beginner",
+  INTERMEDIATE: "Intermediate",
+  ADVANCED: "Advanced",
+} as const;
+
+function formatTimestamp(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
 
 export default async function LessonDetailPage({
   params,
@@ -14,16 +23,62 @@ export default async function LessonDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lesson = getLessonById(id);
+
+  const lesson = await prisma.lesson.findUnique({
+    where: { slug: id },
+    include: {
+      category: true,
+      author: true,
+      steps: { orderBy: { order: "asc" } },
+      _count: { select: { likes: true, remixes: true } },
+    },
+  });
+
   if (!lesson) notFound();
 
-  const steps = getLessonSteps(lesson);
-  const comments = getLessonComments(lesson);
+  const level = LEVEL_LABELS[lesson.level];
 
   const remixParams = new URLSearchParams({
     topic: lesson.title,
-    level: lesson.level,
+    level,
   });
+
+  const session = await auth();
+
+  const comments = await prisma.comment
+    .findMany({
+      where: { lessonId: lesson.id },
+      include: { author: true },
+      orderBy: { createdAt: "desc" },
+    })
+    .then((rows) =>
+      rows.map((c) => ({
+        id: c.id,
+        author: c.author.username,
+        body: c.body,
+        createdAt: c.createdAt.toISOString(),
+      }))
+    );
+
+  const initialLiked = session?.user?.id
+    ? Boolean(
+        await prisma.like.findUnique({
+          where: {
+            userId_lessonId: { userId: session.user.id, lessonId: lesson.id },
+          },
+        })
+      )
+    : false;
+
+  const initialBookmarked = session?.user?.id
+    ? Boolean(
+        await prisma.bookmark.findUnique({
+          where: {
+            userId_lessonId: { userId: session.user.id, lessonId: lesson.id },
+          },
+        })
+      )
+    : false;
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
@@ -31,7 +86,7 @@ export default async function LessonDetailPage({
         <Link href="/library" className="hover:text-ink transition-colors">
           Library
         </Link>{" "}
-        / {lesson.category}
+        / {lesson.category.name}
       </p>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -43,16 +98,21 @@ export default async function LessonDetailPage({
             {lesson.description}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-mist-dim">
-            <span>by {lesson.author}</span>
+            <span>by {lesson.author.username}</span>
             <span>·</span>
-            <span>{lesson.level}</span>
+            <span>{level}</span>
             <span>·</span>
             <span>{lesson.durationMin} min</span>
             <span>·</span>
-            <span>⑂ {lesson.remixes} remixes</span>
+            <span>⑂ {lesson._count.remixes} remixes</span>
           </div>
         </div>
-        <LessonActions initialLikes={lesson.likes} />
+        <LessonActions
+          slug={lesson.slug}
+          initialLikes={lesson._count.likes}
+          initialLiked={initialLiked}
+          initialBookmarked={initialBookmarked}
+        />
       </div>
 
       {/* Video placeholder */}
@@ -90,7 +150,7 @@ export default async function LessonDetailPage({
           What this lesson teaches, step by step
         </h2>
         <div className="mt-6 flex flex-col gap-6">
-          {steps.map((step) => (
+          {lesson.steps.map((step) => (
             <div
               key={step.id}
               className="rounded-lg border border-rule bg-surface overflow-hidden"
@@ -104,7 +164,9 @@ export default async function LessonDetailPage({
                     {step.title}
                   </span>
                 </div>
-                <span className="gutter-line">{step.timestamp}</span>
+                <span className="gutter-line">
+                  {formatTimestamp(step.timestampSec)}
+                </span>
               </div>
               <pre className="code-scroll overflow-x-auto px-4 py-3 font-mono text-[13px] leading-6 text-ink">
                 {step.code}
@@ -123,7 +185,7 @@ export default async function LessonDetailPage({
           Comments
         </h2>
         <div className="mt-6">
-          <CommentSection initialComments={comments} />
+          <CommentSection slug={lesson.slug} initialComments={comments} />
         </div>
       </div>
     </div>

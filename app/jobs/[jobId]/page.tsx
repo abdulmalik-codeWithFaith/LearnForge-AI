@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import JobStatusView from "@/components/JobStatusView";
 
 export default async function JobPage({
@@ -8,9 +7,5 @@ export default async function JobPage({
 }) {
   const { jobId } = await params;
 
-  return (
-    <Suspense fallback={null}>
-      <JobStatusView jobId={jobId} />
-    </Suspense>
-  );
+  return <JobStatusView jobId={jobId} />;
 }

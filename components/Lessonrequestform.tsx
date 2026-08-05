@@ -14,13 +14,29 @@ export default function LessonRequestForm() {
     (searchParams.get("level") as (typeof LEVELS)[number]) || "Beginner"
   );
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!topic.trim()) return;
-    const jobId = `job-${Date.now().toString(36)}`;
-    const params = new URLSearchParams({ topic: topic.trim(), level });
-    router.push(`/jobs/${jobId}?${params.toString()}`);
+  async function handleSubmit(e: FormEvent) {
+  e.preventDefault();
+  if (!topic.trim()) return;
+
+  const res = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ topic: topic.trim(), level, isPrivate: false }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    if (res.status === 401) {
+      router.push("/login");
+      return;
+    }
+    alert(data.error ?? "Something went wrong.");
+    return;
   }
+
+  const { jobId } = await res.json();
+  router.push(`/jobs/${jobId}`);
+}
 
   return (
     <div>

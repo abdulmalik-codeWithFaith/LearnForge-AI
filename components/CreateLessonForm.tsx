@@ -16,17 +16,29 @@ export default function CreateLessonForm() {
   );
   const [isPrivate, setIsPrivate] = useState(false);
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!topic.trim()) return;
-    const jobId = `job-${Date.now().toString(36)}`;
-    const params = new URLSearchParams({
-      topic: topic.trim(),
-      level,
-      private: String(isPrivate),
-    });
-    router.push(`/jobs/${jobId}?${params.toString()}`);
+  async function handleSubmit(e: FormEvent) {
+  e.preventDefault();
+  if (!topic.trim()) return;
+
+  const res = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ topic: topic.trim(), level, isPrivate }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    if (res.status === 401) {
+      router.push("/login");
+      return;
+    }
+    alert(data.error ?? "Something went wrong.");
+    return;
   }
+
+  const { jobId } = await res.json();
+  router.push(`/jobs/${jobId}`);
+}
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">

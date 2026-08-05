@@ -1,19 +1,52 @@
 "use client";
 
 import { useState } from "react";
+import { useSession, signIn } from "next-auth/react";
 
 export default function LessonActions({
+  slug,
   initialLikes,
+  initialLiked,
+  initialBookmarked,
 }: {
+  slug: string;
   initialLikes: number;
+  initialLiked: boolean;
+  initialBookmarked: boolean;
 }) {
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
+  const { data: session } = useSession();
+  const [liked, setLiked] = useState(initialLiked);
+  const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [likes, setLikes] = useState(initialLikes);
+  const [loading, setLoading] = useState(false);
 
-  function toggleLike() {
-    setLiked((v) => !v);
-    setLikes((n) => (liked ? n - 1 : n + 1));
+  async function toggleLike() {
+    if (!session) {
+      signIn();
+      return;
+    }
+    setLoading(true);
+    const res = await fetch(`/api/lessons/${slug}/like`, { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      setLiked(data.liked);
+      setLikes(data.likes);
+    }
+    setLoading(false);
+  }
+
+  async function toggleBookmark() {
+    if (!session) {
+      signIn();
+      return;
+    }
+    setLoading(true);
+    const res = await fetch(`/api/lessons/${slug}/bookmark`, { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      setBookmarked(data.bookmarked);
+    }
+    setLoading(false);
   }
 
   return (
@@ -21,7 +54,8 @@ export default function LessonActions({
       <button
         type="button"
         onClick={toggleLike}
-        className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-[13px] transition-colors ${
+        disabled={loading}
+        className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-[13px] transition-colors disabled:opacity-50 ${
           liked
             ? "border-amber/50 bg-amber/10 text-amber"
             : "border-rule text-mist hover:text-ink"
@@ -33,8 +67,9 @@ export default function LessonActions({
 
       <button
         type="button"
-        onClick={() => setBookmarked((v) => !v)}
-        className={`rounded-md border px-3 py-2 text-[13px] transition-colors ${
+        onClick={toggleBookmark}
+        disabled={loading}
+        className={`rounded-md border px-3 py-2 text-[13px] transition-colors disabled:opacity-50 ${
           bookmarked
             ? "border-teal/50 bg-teal/10 text-teal"
             : "border-rule text-mist hover:text-ink"
