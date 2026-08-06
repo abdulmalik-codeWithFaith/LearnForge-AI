@@ -38,9 +38,9 @@ export default function Nav() {
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
-          <button className="text-[14px] text-mist hover:text-ink transition-colors">
+          <Link href="/login" className="text-[14px] text-mist hover:text-ink transition-colors">
             Sign in
-          </button>
+          </Link>
           <Link
             href="/create"
             className="rounded-md bg-amber px-4 py-2 text-[14px] font-semibold text-canvas hover:bg-amber-dim transition-colors"
@@ -82,9 +82,9 @@ export default function Nav() {
             ))}
           </nav>
           <div className="mt-5 flex flex-col gap-3 border-t border-rule pt-4">
-            <button className="text-left text-[14px] text-mist hover:text-ink transition-colors">
+            <Link href="/login" className="text-left text-[14px] text-mist hover:text-ink transition-colors">
               Sign in
-            </button>
+            </Link>
             <Link
               href="/create"
               onClick={() => setOpen(false)}
