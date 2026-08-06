@@ -56,3 +56,39 @@ export async function generateNarrationAudio(
 
   return { audio: pcmToWav(pcmBuffer), durationSeconds };
 }
+
+export async function generateCombinedNarration(
+  stepTexts: string[]
+): Promise<{ audio: Buffer; totalDurationSeconds: number }> {
+  const combinedText = stepTexts
+    .map((text, i) => `${text}`)
+    .join(" ... ... "); // pause markers between steps
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash-preview-tts",
+    contents: combinedText,
+    config: {
+      responseModalities: ["AUDIO"],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName: "Kore" },
+        },
+      },
+    },
+  });
+
+  const audioPart = response.candidates?.[0]?.content?.parts?.find(
+    (p) => p.inlineData
+  );
+
+  if (!audioPart?.inlineData?.data) {
+    throw new Error("Gemini TTS returned no audio data");
+  }
+
+  const pcmBuffer = Buffer.from(audioPart.inlineData.data, "base64");
+  const sampleRate = 24000;
+  const bytesPerSample = 2;
+  const totalDurationSeconds = pcmBuffer.length / (sampleRate * bytesPerSample);
+
+  return { audio: pcmToWav(pcmBuffer), totalDurationSeconds };
+}

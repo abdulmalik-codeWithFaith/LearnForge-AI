@@ -4,6 +4,7 @@ import LessonActions from "@/components/LessonActions";
 import CommentSection from "@/components/CommentSection";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { getSignedFileUrl } from "@/lib/storage";
 
 const LEVEL_LABELS = {
   BEGINNER: "Beginner",
@@ -30,6 +31,7 @@ export default async function LessonDetailPage({
       category: true,
       author: true,
       steps: { orderBy: { order: "asc" } },
+      video: true,
       _count: { select: { likes: true, remixes: true } },
     },
   });
@@ -80,6 +82,10 @@ export default async function LessonDetailPage({
       )
     : false;
 
+  const videoUrl = lesson.video
+    ? await getSignedFileUrl(lesson.video.storageUrl, 3600)
+    : null;
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
       <p className="gutter-line mb-4">
@@ -115,20 +121,23 @@ export default async function LessonDetailPage({
         />
       </div>
 
-      {/* Video placeholder */}
-      <div className="mt-8 flex aspect-video items-center justify-center rounded-lg border border-rule bg-surface">
-        <div className="flex flex-col items-center gap-2">
-          <button
-            type="button"
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-amber text-canvas hover:bg-amber-dim transition-colors"
-            aria-label="Play lesson video"
-          >
-            ▶
-          </button>
-          <span className="gutter-line">
-            {lesson.durationMin} min narrated walkthrough
-          </span>
-        </div>
+      {/* Video */}
+      <div className="mt-8 overflow-hidden rounded-lg border border-rule bg-surface">
+        {videoUrl ? (
+          <video
+            controls
+            className="aspect-video w-full bg-black"
+            src={videoUrl}
+          />
+        ) : (
+          <div className="flex aspect-video items-center justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <span className="gutter-line">
+                Video not available for this lesson yet
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Remix CTA */}
