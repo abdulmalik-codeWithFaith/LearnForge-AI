@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import CodeTypingDemo from "@/components/Codetypingdemo";
 import LessonRequestForm from "@/components/Lessonrequestform";
@@ -46,7 +47,9 @@ export default function Home() {
             </p>
 
             <div className="mt-8">
-              <LessonRequestForm />
+              <Suspense fallback={null}>
+                <LessonRequestForm />
+              </Suspense>
             </div>
           </div>
 
