@@ -10,9 +10,11 @@ export const RemotionRoot: React.FC = () => {
       fps={30}
       width={1280}
       height={720}
+      
       defaultProps={{
-        lessonTitle: "Preview",
+        lessonTitle: "Sample Lesson",
         steps: [],
+        narrationUrl: "",
       } as LessonVideoProps}
       calculateMetadata={async ({ props }) => {
         const total = props.steps.reduce(
