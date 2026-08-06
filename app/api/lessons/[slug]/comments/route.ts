@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET(
   request: Request,
@@ -19,12 +20,14 @@ export async function GET(
   });
 
   return NextResponse.json(
-    comments.map((c) => ({
-      id: c.id,
-      author: c.author.username,
-      body: c.body,
-      createdAt: c.createdAt,
-    }))
+    comments.map(
+      (c: Prisma.CommentGetPayload<{ include: { author: true } }>) => ({
+        id: c.id,
+        author: c.author.username,
+        body: c.body,
+        createdAt: c.createdAt,
+      })
+    )
   );
 }
 
