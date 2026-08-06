@@ -1,5 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import {
+  Code2,
+  Sigma,
+  Table2,
+  Palette,
+  FlaskConical,
+  Briefcase,
+} from "lucide-react";
 import CodeTypingDemo from "@/components/Codetypingdemo";
 import LessonRequestForm from "@/components/Lessonrequestform";
 import { mockLessons } from "@/lib/mock-data";
@@ -13,18 +21,27 @@ const STEPS = [
   {
     n: "02",
     title: "LearnForge plans and builds it",
-    body: "A complete, working project gets generated behind the scenes before a single teaching frame is made.",
+    body: "A complete, working project or example gets generated behind the scenes before a single teaching frame is made.",
   },
   {
     n: "03",
-    title: "The project is split into steps",
-    body: "The code is broken into small, ordered teaching moments — the same way a good tutor would pace a lesson.",
+    title: "It's split into steps",
+    body: "The lesson is broken into small, ordered teaching moments — the same way a good tutor would pace a session.",
   },
   {
     n: "04",
     title: "You watch it get taught",
-    body: "A narrated video plays the code in line by line, explaining the reasoning as each piece appears.",
+    body: "A narrated video walks through it piece by piece, explaining the reasoning as each part appears.",
   },
+];
+
+const SUBJECTS = [
+  { icon: Code2, label: "Programming" },
+  { icon: Sigma, label: "Math" },
+  { icon: Table2, label: "Excel & Data" },
+  { icon: Palette, label: "Design" },
+  { icon: FlaskConical, label: "Science" },
+  { icon: Briefcase, label: "Business" },
 ];
 
 export default function Home() {
@@ -36,14 +53,15 @@ export default function Home() {
           <div>
             <p className="gutter-line mb-4">{"// personalized learning, taught not told"}</p>
             <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.05]">
-              Don&apos;t just get the code.
+              Don&apos;t just get the answer.
               <br />
               Watch it get <span className="text-amber">taught</span>.
             </h1>
             <p className="mt-6 max-w-md text-[15px] leading-relaxed text-mist">
-              Describe what you want to learn. LearnForge builds a real
-              project, then narrates it back to you — line by line, with the
-              reasoning included.
+              Describe anything you want to learn — code, math, a spreadsheet
+              formula, a design principle. LearnForge builds a real example,
+              then narrates it back to you, step by step, with the reasoning
+              included.
             </p>
 
             <div className="mt-8">
@@ -57,7 +75,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it works — a genuine ordered pipeline, so numbering earns its place */}
+      {/* Subject grid — the "learn anything" signal */}
+      <section className="border-t border-rule">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <p className="gutter-line mb-6">{"// not just code"}</p>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {SUBJECTS.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-3 rounded-lg border border-rule bg-surface px-4 py-6 text-center transition-colors hover:border-teal/50"
+              >
+                <Icon className="h-6 w-6 text-teal" strokeWidth={1.5} />
+                <span className="text-[13px] text-mist">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
       <section id="how-it-works" className="border-t border-rule">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">
