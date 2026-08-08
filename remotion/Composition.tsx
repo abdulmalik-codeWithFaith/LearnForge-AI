@@ -54,84 +54,99 @@ function StepSlide({
   const { fps } = useVideoConfig();
 
   const lines = step.code.split("\n");
-  const revealDurationFrames = fps * 1.5; // all lines finish appearing within first 1.5s
+  const revealDurationFrames = fps * 1.5;
   const perLineDelay = lines.length > 1 ? revealDurationFrames / lines.length : 0;
 
   return (
     <AbsoluteFill
       style={{
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 60,
+        flexDirection: "column",
         fontFamily: "monospace",
       }}
     >
-      <div style={{ color: "#8a8a8f", fontSize: 18, marginBottom: 16 }}>
-        {lessonTitle} — step {index + 1} of {total}
-      </div>
-      <div
-        style={{
-          color: "#f5c542",
-          fontSize: 28,
-          fontWeight: 600,
-          marginBottom: 24,
-        }}
-      >
-        {step.title}
-      </div>
-      <div
-        style={{
-          backgroundColor: "#1a1a1d",
-          color: "#e8e8ea",
-          padding: 32,
-          borderRadius: 12,
-          fontSize: 22,
-          lineHeight: 1.7,
-          maxWidth: "80%",
-        }}
-      >
-        {lines.map((line, i) => {
-          const lineStartFrame = i * perLineDelay;
-          const opacity = interpolate(
-            frame,
-            [lineStartFrame, lineStartFrame + fps * 0.3],
-            [0, 1],
-            { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-          );
-          const translateY = interpolate(
-            frame,
-            [lineStartFrame, lineStartFrame + fps * 0.3],
-            [8, 0],
-            { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-          );
-
-          return (
-            <div
-              key={i}
-              style={{
-                opacity,
-                transform: `translateY(${translateY}px)`,
-                whiteSpace: "pre",
-              }}
-            >
-              {line || "\u00A0"}
-            </div>
-          );
-        })}
+      {/* Header */}
+      <div style={{ padding: "40px 60px 0 60px" }}>
+        <div style={{ color: "#8a8a8f", fontSize: 18, marginBottom: 12 }}>
+          {lessonTitle} — step {index + 1} of {total}
+        </div>
+        <div
+          style={{
+            color: "#f5c542",
+            fontSize: 28,
+            fontWeight: 600,
+          }}
+        >
+          {step.title}
+        </div>
       </div>
 
+      {/* Code — constrained middle region, never grows into the footer */}
       <div
         style={{
-          position: "absolute",
-          bottom: 50,
-          left: 60,
-          right: 60,
-          textAlign: "center",
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "20px 60px",
         }}
       >
         <div
           style={{
-            display: "inline-block",
+            backgroundColor: "#1a1a1d",
+            color: "#e8e8ea",
+            padding: 32,
+            borderRadius: 12,
+            fontSize: 22,
+            lineHeight: 1.7,
+            maxWidth: "80%",
+            maxHeight: "100%",
+            overflow: "hidden",
+          }}
+        >
+          {lines.map((line, i) => {
+            const lineStartFrame = i * perLineDelay;
+            const opacity = interpolate(
+              frame,
+              [lineStartFrame, lineStartFrame + fps * 0.3],
+              [0, 1],
+              { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+            );
+            const translateY = interpolate(
+              frame,
+              [lineStartFrame, lineStartFrame + fps * 0.3],
+              [8, 0],
+              { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+            );
+
+            return (
+              <div
+                key={i}
+                style={{
+                  opacity,
+                  transform: `translateY(${translateY}px)`,
+                  whiteSpace: "pre",
+                }}
+              >
+                {line || "\u00A0"}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Subtitle — fixed-height footer, always reserved, never overlapped */}
+      <div
+        style={{
+          minHeight: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 60px 40px 60px",
+        }}
+      >
+        <div
+          style={{
             backgroundColor: "rgba(0,0,0,0.75)",
             color: "#ffffff",
             fontSize: 20,
@@ -139,6 +154,7 @@ function StepSlide({
             padding: "10px 20px",
             borderRadius: 8,
             maxWidth: "90%",
+            textAlign: "center",
             fontFamily: "sans-serif",
           }}
         >

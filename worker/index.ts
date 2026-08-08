@@ -118,7 +118,11 @@ async function processJob(job: Job<GenerateLessonJobData>) {
 const worker = new Worker<GenerateLessonJobData>(
   "lesson-generation",
   processJob,
-  { connection: redisConnection }
+  {
+    connection: redisConnection,
+    lockDuration: 15 * 60 * 1000, // 15 minutes — video rendering can legitimately take a while
+    concurrency: 1,
+  }
 );
 
 worker.on("failed", async (job, err) => {
