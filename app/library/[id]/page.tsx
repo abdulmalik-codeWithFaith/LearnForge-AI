@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import LessonActions from "@/components/LessonActions";
 import CommentSection from "@/components/CommentSection";
 import { prisma } from "@/lib/prisma";
+export const dynamic = "force-dynamic";
 import { auth } from "@/auth";
 import { getSignedFileUrl } from "@/lib/storage";
 

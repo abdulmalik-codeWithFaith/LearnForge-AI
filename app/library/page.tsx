@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import LibraryClient from "@/components/LibraryClient";
-
+export const dynamic = "force-dynamic";
 const LEVEL_LABELS = {
   BEGINNER: "Beginner",
   INTERMEDIATE: "Intermediate",
